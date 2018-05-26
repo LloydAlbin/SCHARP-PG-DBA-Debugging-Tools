@@ -1,0 +1,8 @@
+directory = 'extension'
+default_version = '0.1'
+comment = 'SCHARP Generic Postgres Tools Extension for DBA Debugging'
+encoding = 'UTF8'
+requires = 'plpgsql,pageinspect'
+superuser = true
+relocatable = false
+schema = 'tools'
