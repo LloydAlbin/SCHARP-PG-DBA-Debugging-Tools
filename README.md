@@ -108,6 +108,6 @@ WHERE t_xmin IS NULL
     AND t_xmax IS NULL 
 ```
 
-######Thank you's to the following People - Pages
+###### Thank you's to the following People - Pages
 Laurenz Albe - https://www.cybertec-postgresql.com/en/whats-in-an-xmax/
 Alvaro Herrera - https://www.commandprompt.com/blog/decoding_infomasks/
