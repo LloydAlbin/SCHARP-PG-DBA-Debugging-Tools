@@ -18,7 +18,7 @@ RETURNS TABLE (
 ) AS
 $body$
  WITH RECURSIVE t(n) AS (
-SELECT (pg_relation_size.pg_relation_size / 8192 - 1)::integer AS int4
+SELECT (pg_relation_size.pg_relation_size / current_setting('block_size')::integer - 1)::integer AS int4
 FROM pg_relation_size($1::regclass) pg_relation_size(pg_relation_size)
 UNION ALL
 SELECT t_1.n - 1
@@ -65,7 +65,7 @@ RETURNS TABLE (
 ) AS
 $body$
 WITH RECURSIVE t(n) AS (
-  SELECT (pg_relation_size / 8192 - 1)::integer AS int4
+  SELECT (pg_relation_size / current_setting('block_size')::integer - 1)::integer AS int4
   FROM pg_relation_size($1::regclass)
   UNION ALL
   SELECT t_1.n - 1
@@ -206,7 +206,7 @@ CREATE OR REPLACE FUNCTION tools.page_count (table_name regclass)
 RETURNS int4
 AS
 $body$
-SELECT (pg_relation_size.pg_relation_size / 8192 )::integer AS int4
+SELECT (pg_relation_size.pg_relation_size / current_setting('block_size')::integer )::integer AS int4
   FROM pg_relation_size($1::regclass) pg_relation_size(
     pg_relation_size)
 $body$
