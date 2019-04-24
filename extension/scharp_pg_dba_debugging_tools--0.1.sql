@@ -19,7 +19,7 @@ RETURNS TABLE (
 ) AS
 $body$
  WITH RECURSIVE t(n) AS (
-SELECT (pg_relation_size.pg_relation_size / 8192 - 1)::integer AS int4
+SELECT (pg_relation_size.pg_relation_size / current_setting('block_size')::integer - 1)::integer AS int4
 FROM pg_relation_size($1::regclass) pg_relation_size(pg_relation_size)
 UNION ALL
 SELECT t_1.n - 1
@@ -66,7 +66,7 @@ RETURNS TABLE (
 ) AS
 $body$
 WITH RECURSIVE t(n) AS (
-  SELECT (pg_relation_size / 8192 - 1)::integer AS int4
+  SELECT (pg_relation_size / current_setting('block_size')::integer - 1)::integer AS int4
   FROM pg_relation_size($1::regclass)
   UNION ALL
   SELECT t_1.n - 1
@@ -82,7 +82,8 @@ SECURITY DEFINER;
 
 GRANT EXECUTE ON FUNCTION @extschema@.heap_page_item_attrs (table_name regclass) TO PUBLIC;
 
-CREATE OR REPLACE FUNCTION @extschema@.heap_page_item_attrs_details (table_name regclass)
+CREATE OR REPLACE FUNCTION @extschema@.heap_page_item_attrs_details (table_name regclass,
+  limit_page_results integer = 0)
 RETURNS TABLE (
   p integer,
   lp smallint,
@@ -127,7 +128,12 @@ RETURNS TABLE (
 $body$
 WITH RECURSIVE t(
     n) AS(
-  SELECT (pg_relation_size / 8192 - 1)::integer AS int4
+  SELECT 
+  	CASE 
+    	WHEN (limit_page_results > 0 AND (pg_relation_size / current_setting('block_size')::integer - 1)::integer > limit_page_results) 
+        THEN limit_page_results 
+        ELSE (pg_relation_size / current_setting('block_size')::integer - 1)::integer 
+        END AS int4
   FROM pg_relation_size($1::regclass)
   UNION ALL
   SELECT t_1.n - 1
@@ -199,7 +205,7 @@ CREATE OR REPLACE FUNCTION @extschema@.page_count (table_name regclass)
 RETURNS int4
 AS
 $body$
-SELECT (pg_relation_size.pg_relation_size / 8192 )::integer AS int4
+SELECT (pg_relation_size.pg_relation_size / current_setting('block_size')::integer )::integer AS int4
   FROM pg_relation_size($1::regclass) pg_relation_size(
     pg_relation_size)
 $body$
