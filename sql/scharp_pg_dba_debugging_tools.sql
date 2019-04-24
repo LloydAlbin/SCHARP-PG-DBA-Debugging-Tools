@@ -82,7 +82,8 @@ SECURITY DEFINER;
 GRANT EXECUTE ON FUNCTION tools.heap_page_item_attrs (table_name regclass) TO PUBLIC;
 
 CREATE OR REPLACE FUNCTION tools.heap_page_item_attrs_details (
-  table_name pg_catalog.regclass
+  table_name pg_catalog.regclass,
+  limit_page_results integer = 0
 )
 RETURNS TABLE (
   p integer,
@@ -128,7 +129,12 @@ RETURNS TABLE (
 $body$
 WITH RECURSIVE t(
     n) AS(
-  SELECT (pg_relation_size / 8192 - 1)::integer AS int4
+  SELECT 
+  	CASE 
+    	WHEN (limit_page_results > 0 AND (pg_relation_size / current_setting('block_size')::integer - 1)::integer > limit_page_results) 
+        THEN limit_page_results 
+        ELSE (pg_relation_size / current_setting('block_size')::integer - 1)::integer 
+        END AS int4
   FROM pg_relation_size($1::regclass)
   UNION ALL
   SELECT t_1.n - 1
